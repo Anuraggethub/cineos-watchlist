@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CINE//OS — Private Watchlist</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="logo">
+      <span class="logo-mark">▣</span>
+      <div class="logo-text">
+        <span class="logo-title">CINE//OS</span>
+        <span class="logo-sub">Private Watchlist v1</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-view="watchlist">
+        <span class="nav-icon">◈</span> Watchlist
+      </button>
+      <button class="nav-btn" data-view="analytics">
+        <span class="nav-icon">◎</span> Analytics
+      </button>
+      <button class="nav-btn" data-view="add">
+        <span class="nav-icon">⊕</span> Add Entry
+      </button>
+    </nav>
+
+    <div class="sidebar-stats">
+      <div class="stat-block">
+        <span class="stat-val" id="stat-total">—</span>
+        <span class="stat-lbl">TOTAL</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-val" id="stat-unwatched">—</span>
+        <span class="stat-lbl">QUEUE</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-val" id="stat-watched">—</span>
+        <span class="stat-lbl">DONE</span>
+      </div>
+    </div>
+
+    <div class="sidebar-filters">
+      <div class="filter-label">FILTER</div>
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="unwatched">Queue</button>
+      <button class="filter-btn" data-filter="watching">Watching</button>
+      <button class="filter-btn" data-filter="watched">Watched</button>
+      <button class="filter-btn" data-filter="dropped">Dropped</button>
+
+      <div class="filter-label" style="margin-top:16px">TYPE</div>
+      <button class="filter-btn active" data-type="all">All Types</button>
+      <button class="filter-btn" data-type="Movie">Movies</button>
+      <button class="filter-btn" data-type="TV Series">TV Series</button>
+      <button class="filter-btn" data-type="TV Mini Series">Mini Series</button>
+
+      <div class="filter-label" style="margin-top:16px">PRIORITY</div>
+      <button class="filter-btn" data-priority="🔥">🔥 Must Watch</button>
+      <button class="filter-btn" data-priority="⚡">⚡ High</button>
+      <button class="filter-btn" data-priority="●">● Normal</button>
+    </div>
+
+    <div class="keyboard-hint">
+      <div class="hint-title">SHORTCUTS</div>
+      <div class="hint-row"><kbd>A</kbd> Add entry</div>
+      <div class="hint-row"><kbd>/</kbd> Search</div>
+      <div class="hint-row"><kbd>↑↓</kbd> Navigate</div>
+      <div class="hint-row"><kbd>Enter</kbd> Details</div>
+      <div class="hint-row"><kbd>Esc</kbd> Close panel</div>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <main id="main">
+
+    <!-- TOOLBAR -->
+    <header id="toolbar">
+      <div class="toolbar-left">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="search" placeholder="Search title, genre, director..." autocomplete="off">
+        </div>
+        <div class="sort-wrap">
+          <label>SORT</label>
+          <select id="sort-select">
+            <option value="position">List Order</option>
+            <option value="imdbRating-desc">IMDb ↓</option>
+            <option value="imdbRating-asc">IMDb ↑</option>
+            <option value="year-desc">Year ↓</option>
+            <option value="year-asc">Year ↑</option>
+            <option value="runtime-asc">Shortest</option>
+            <option value="runtime-desc">Longest</option>
+            <option value="priority">Priority</option>
+            <option value="addedDate-desc">Recently Added</option>
+          </select>
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <span id="result-count" class="result-count">— entries</span>
+        <button id="tonight-btn" class="btn-accent" title="Get AI pick for tonight">▶ Tonight's Pick</button>
+      </div>
+    </header>
+
+    <!-- WATCHLIST VIEW -->
+    <div id="view-watchlist" class="view active">
+      <div id="table-container">
+        <table id="watchlist-table">
+          <thead>
+            <tr>
+              <th data-col="priority" class="col-priority">PRI</th>
+              <th data-col="title" class="col-title">TITLE</th>
+              <th data-col="type" class="col-type">TYPE</th>
+              <th data-col="year" class="col-year">YEAR</th>
+              <th data-col="imdbRating" class="col-rating">IMDb</th>
+              <th data-col="runtime" class="col-runtime">TIME</th>
+              <th data-col="genres" class="col-genre">GENRE</th>
+              <th data-col="status" class="col-status">STATUS</th>
+              <th data-col="yourRating" class="col-myrating">MINE</th>
+              <th class="col-flag">FLAG</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ANALYTICS VIEW -->
+    <div id="view-analytics" class="view">
+      <div class="analytics-grid">
+        <div class="analytics-card">
+          <div class="ac-title">RATING DISTRIBUTION</div>
+          <div id="chart-ratings" class="chart-area"></div>
+        </div>
+        <div class="analytics-card">
+          <div class="ac-title">GENRE BREAKDOWN</div>
+          <div id="chart-genres" class="chart-area"></div>
+        </div>
+        <div class="analytics-card">
+          <div class="ac-title">TYPE SPLIT</div>
+          <div id="chart-types" class="chart-area"></div>
+        </div>
+        <div class="analytics-card">
+          <div class="ac-title">TOP RATED IN QUEUE</div>
+          <div id="chart-toprated" class="chart-area"></div>
+        </div>
+        <div class="analytics-card">
+          <div class="ac-title">DECADE SPREAD</div>
+          <div id="chart-decades" class="chart-area"></div>
+        </div>
+        <div class="analytics-card">
+          <div class="ac-title">RUNTIME HEATMAP</div>
+          <div id="chart-runtime" class="chart-area"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD ENTRY VIEW -->
+    <div id="view-add" class="view">
+      <div class="add-form-wrap">
+        <div class="add-form-title">ADD ENTRY</div>
+        <div class="add-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>TITLE *</label>
+              <input type="text" id="f-title" placeholder="e.g. Oppenheimer">
+            </div>
+            <div class="form-group sm">
+              <label>TYPE</label>
+              <select id="f-type">
+                <option value="Movie">Movie</option>
+                <option value="TV Series">TV Series</option>
+                <option value="TV Mini Series">TV Mini Series</option>
+                <option value="Short">Short</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group sm">
+              <label>YEAR</label>
+              <input type="number" id="f-year" placeholder="2024" min="1900" max="2030">
+            </div>
+            <div class="form-group sm">
+              <label>IMDb RATING</label>
+              <input type="number" id="f-imdb" placeholder="8.2" min="0" max="10" step="0.1">
+            </div>
+            <div class="form-group sm">
+              <label>RUNTIME (mins)</label>
+              <input type="number" id="f-runtime" placeholder="120">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>GENRES (comma separated)</label>
+              <input type="text" id="f-genres" placeholder="Drama, Romance, Thriller">
+            </div>
+            <div class="form-group sm">
+              <label>DIRECTOR</label>
+              <input type="text" id="f-director" placeholder="Christopher Nolan">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group sm">
+              <label>PRIORITY</label>
+              <select id="f-priority">
+                <option value="">— None —</option>
+                <option value="🔥">🔥 Must Watch</option>
+                <option value="⚡">⚡ High</option>
+                <option value="●">● Normal</option>
+              </select>
+            </div>
+            <div class="form-group sm">
+              <label>STATUS</label>
+              <select id="f-status">
+                <option value="unwatched">Unwatched</option>
+                <option value="watching">Watching</option>
+                <option value="watched">Watched</option>
+                <option value="dropped">Dropped</option>
+              </select>
+            </div>
+            <div class="form-group sm">
+              <label>IMDb URL</label>
+              <input type="text" id="f-url" placeholder="https://imdb.com/...">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group full">
+              <label>NOTES / THESIS</label>
+              <textarea id="f-notes" placeholder="Why do I want to watch this? What's the context?"></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button id="add-submit-btn" class="btn-primary">⊕ ADD TO WATCHLIST</button>
+            <button id="add-cancel-btn" class="btn-ghost">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- RIGHT DETAIL PANEL -->
+  <aside id="detail-panel" class="panel-closed">
+    <div class="panel-header">
+      <span class="panel-title" id="panel-title">—</span>
+      <button id="panel-close">✕</button>
+    </div>
+    <div class="panel-body" id="panel-body"></div>
+  </aside>
+
+</div>
+
+<!-- TONIGHT MODAL -->
+<div id="tonight-modal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span>▶ TONIGHT'S PICK</span>
+      <button id="modal-close">✕</button>
+    </div>
+    <div id="modal-body" class="modal-body">
+      <div class="modal-loading">Calculating optimal pick…</div>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
